@@ -67,10 +67,11 @@ button:focus-visible, select:focus-visible, input:focus-visible + .slot-in, labe
   position: absolute; top: 0; right: 0; transform-origin: top right;
   width: calc(210 * var(--mm)); height: calc(297 * var(--mm));
   background: #fff; color: #000; box-shadow: var(--shadow);
-  padding: calc(3 * var(--mm)) calc(14.4 * var(--mm));
+  padding: calc(var(--top, 3) * var(--mm)) calc(14.4 * var(--mm));
 }
-.grid { display: grid; grid-template-columns: repeat(2, calc(85.6 * var(--mm))); grid-template-rows: repeat(6, calc(46.8 * var(--mm))); row-gap: calc(2 * var(--mm)); column-gap: calc(10 * var(--mm)); }
-.cell { position: relative; width: calc(85.6 * var(--mm)); height: calc(46.8 * var(--mm)); }
+.grid { display: grid; grid-template-columns: repeat(2, calc(85.6 * var(--mm))); grid-template-rows: repeat(var(--rows, 6), calc(var(--h, 46.8) * var(--mm))); row-gap: calc(2 * var(--mm)); column-gap: calc(10 * var(--mm)); }
+.cell[hidden] { display: none; }
+.cell { position: relative; width: calc(85.6 * var(--mm)); height: calc(var(--h, 46.8) * var(--mm)); }
 .page.guides .cell { outline: 1px dashed #b5b5b5; outline-offset: -1px; }
 .slot { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; cursor: pointer; border-radius: calc(3.18 * var(--mm)); overflow: hidden; background: #f4f6f7; color: #5a6a72; font-size: calc(13px * var(--inv)); line-height: 1.4; padding: 6px; }
 .cell:not(.has) .slot { outline: 1px dashed #9fb0b8; outline-offset: calc(-6px * var(--inv)); }
@@ -100,10 +101,11 @@ button:focus-visible, select:focus-visible, input:focus-visible + .slot-in, labe
 <div class="wrap">
   <div>
     <h1>طباعة البطاقة الوطنية</h1>
-    <p class="sub">ورقة A4 بعمودين وستة صفوف: الوجه في العمود الأيمن والخلف في الأيسر، بمقاس 85.6 × 46.8 ملم لكل بطاقة.</p>
+    <p class="sub" id="sub"></p>
   </div>
 
   <div class="tools">
+    <button type="button" class="tb" id="modeBtn" aria-live="polite"></button>
     <button type="button" class="tb" id="bulkBtn">اختيار عدة صور</button>
     <input class="vh" type="file" id="bulk" accept="image/*" multiple tabindex="-1">
     <button type="button" class="tb" id="repBtn">تكرار الصف الأول على كل الصفوف</button>
@@ -136,23 +138,27 @@ button:focus-visible, select:focus-visible, input:focus-visible + .slot-in, labe
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 (function () {
-  var ROWS = 6, N = ROWS * 2;
+  var MODES = {
+    6: { rows: 6, h: 46.8, top: 3, pitch: 48.8, word: 'ستة', file: 'البطاقة_الوطنية_6_قطع.pdf' },
+    5: { rows: 5, h: 54, top: 9.5, pitch: 56, word: 'خمسة', file: 'البطاقة_الوطنية_5_قطع.pdf' }
+  };
+  var MAXN = 12, mode = 6, cfg = MODES[6], ROWS = cfg.rows, N = ROWS * 2;
   var $ = function (id) { return document.getElementById(id); };
-  var slots = new Array(N);       // {blob, url, img}
+  var slots = new Array(MAXN);       // {blob, url, img}
   var cells = [];
   var dl = null;
 
   function say(m, err) { var s = $('status'); s.textContent = m; s.className = 'status' + (err ? ' err' : ''); }
   function ar(n) { return String(n).replace(/[0-9]/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'.charAt(+d); }); }
-  function count() { return slots.filter(Boolean).length; }
+  function count() { return slots.slice(0, N).filter(Boolean).length; }
   function refreshStatus() {
     var c = count();
     say(c ? 'تمت إضافة ' + ar(c) + ' من ' + ar(N) + ' صور.' : 'لم تُضف أي صورة بعد.');
   }
 
-  /* build the 12 slots */
+  /* build the 12 slots (the last 2 are hidden in the 5-piece mode) */
   var grid = $('grid');
-  for (var i = 0; i < N; i++) {
+  for (var i = 0; i < MAXN; i++) {
     var r = Math.floor(i / 2), face = i % 2 === 0;
     var label = (face ? 'وجه' : 'خلف') + ' البطاقة ' + ar(r + 1);
     var cell = document.createElement('div');
@@ -213,6 +219,18 @@ button:focus-visible, select:focus-visible, input:focus-visible + .slot-in, labe
     });
   });
 
+  /* layout mode: 6 or 5 pieces per sheet */
+  function setMode(m) {
+    mode = m; cfg = MODES[m]; ROWS = cfg.rows; N = ROWS * 2;
+    var pg = $('page');
+    pg.style.setProperty('--rows', cfg.rows); pg.style.setProperty('--h', cfg.h); pg.style.setProperty('--top', cfg.top);
+    cells.forEach(function (c, i) { c.hidden = i >= N; });
+    $('sub').textContent = 'ورقة A4 بعمودين و' + cfg.word + ' صفوف: الوجه في العمود الأيمن والخلف في الأيسر، بمقاس 85.6 × ' + ar(String(cfg.h).replace('.', '٫')) + ' ملم لكل بطاقة.';
+    $('modeBtn').textContent = m === 6 ? 'التبديل إلى ٥ قطع (بطاقة أكبر)' : 'التبديل إلى ٦ قطع';
+    refreshStatus();
+  }
+  $('modeBtn').addEventListener('click', function () { setMode(mode === 6 ? 5 : 6); });
+
   /* toolbar */
   $('bulkBtn').addEventListener('click', function () { $('bulk').click(); });
   $('bulk').addEventListener('change', async function (e) {
@@ -247,7 +265,7 @@ button:focus-visible, select:focus-visible, input:focus-visible + .slot-in, labe
       return;
     }
     clearTimeout(clearT); b.classList.remove('confirm'); b.textContent = 'مسح الكل';
-    for (var i = 0; i < N; i++) clearSlot(i);
+    for (var i = 0; i < MAXN; i++) clearSlot(i);
     refreshStatus();
   });
   $('fit').addEventListener('change', function () { $('page').className = 'page fit-' + $('fit').value + ($('guides').checked ? ' guides' : ''); });
@@ -263,6 +281,7 @@ button:focus-visible, select:focus-visible, input:focus-visible + .slot-in, labe
   }
   window.addEventListener('resize', fit);
   fit();
+  setMode(6);
 
   /* export: draw at 300 dpi on a canvas, then place it on an A4 PDF page */
   function roundPath(ctx, x, y, w, h, r) {
@@ -278,10 +297,10 @@ button:focus-visible, select:focus-visible, input:focus-visible + .slot-in, labe
     cv.width = Math.round(210 * P); cv.height = Math.round(297 * P);
     var ctx = cv.getContext('2d');
     ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
-    var W = 85.6 * P, H = 46.8 * P, rad = 3.18 * P;
+    var W = 85.6 * P, H = cfg.h * P, rad = 3.18 * P;
     for (var i = 0; i < N; i++) {
       var r = Math.floor(i / 2), c = i % 2;                 // c 0 = face (right column), c 1 = back (left column)
-      var x = (c === 0 ? 14.4 + 85.6 + 10 : 14.4) * P, y = (3 + 48.8 * r) * P;
+      var x = (c === 0 ? 14.4 + 85.6 + 10 : 14.4) * P, y = (cfg.top + cfg.pitch * r) * P;
       var s = slots[i];
       if (s) {
         var im = s.img, iw = im.naturalWidth, ih = im.naturalHeight;
@@ -317,7 +336,7 @@ button:focus-visible, select:focus-visible, input:focus-visible + .slot-in, labe
       var cv = drawSheet();
       var pdf = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
       pdf.addImage(cv.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 210, 297);
-      await saveFile('البطاقة_الوطنية_6_قطع.pdf', pdf.output('blob'));
+      await saveFile(cfg.file, pdf.output('blob'));
       say('تم حفظ ملف PDF. اطبعه بحجم 100% بدون تكبير أو تصغير.');
     } catch (e) {
       if (e && e.code === 'declined') say('أُلغي الحفظ.');
