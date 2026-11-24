@@ -1,0 +1,333 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>طباعة البطاقة الوطنية</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<style>
+/* Layout: toolbar above a true-scale A4 preview, 2 columns (face right, back left) x 6 rows of 85.6 x 46.8 mm slots; sticky export bar.
+   Colour: cool paper, petrol-blue accent. Type: IBM Plex Sans Arabic. */
+:root {
+  --bg: #f3f6f7;
+  --surface: #ffffff;
+  --ink: #12222b;
+  --muted: #55676f;
+  --line: #cfd9dd;
+  --accent: #0b5c78;
+  --accent-ink: #ffffff;
+  --accent-soft: #dcecf2;
+  --warn: #a35a00;
+  --warn-soft: #fbead0;
+  --shadow: 0 1px 2px rgba(18,34,43,.08), 0 6px 24px rgba(18,34,43,.10);
+  --ui: 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1a20; --surface: #16252d; --ink: #e6eef1; --muted: #9fb2ba; --line: #2c424c;
+    --accent: #6bc1de; --accent-ink: #08222c; --accent-soft: #19384a;
+    --warn: #f0b35a; --warn-soft: #3a2b12;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 24px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1a20; --surface: #16252d; --ink: #e6eef1; --muted: #9fb2ba; --line: #2c424c;
+  --accent: #6bc1de; --accent-ink: #08222c; --accent-soft: #19384a;
+  --warn: #f0b35a; --warn-soft: #3a2b12;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 24px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { direction: rtl; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--ui); font-size: 15px; line-height: 1.6;
+  padding-block: 20px 110px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+h1 { margin: 0; font-size: 24px; font-weight: 600; text-wrap: balance; }
+.sub { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+button, select { font: inherit; }
+button { cursor: pointer; }
+button:focus-visible, select:focus-visible, input:focus-visible + .slot-in, label:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.tb { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent); border-radius: 6px; padding: 7px 12px; font-weight: 500; min-height: 38px; }
+.tb.ghost { background: transparent; color: var(--muted); border-color: var(--line); }
+.tb.ghost:hover { color: var(--ink); border-color: var(--muted); }
+.tb.confirm { color: var(--warn); background: var(--warn-soft); border-color: var(--warn); }
+.opt { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); }
+.opt select { background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; min-height: 38px; }
+.opt input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; }
+.sp { flex: 1; }
+.note { margin: 0; font-size: 13px; color: var(--muted); }
+.cols { display: grid; grid-template-columns: 1fr 1fr; padding-inline: 6.86%; column-gap: 4.76%; text-align: center; font-weight: 600; color: var(--muted); font-size: 14px; max-width: 794px; width: 100%; margin: 0 auto -8px; }
+.pv-wrap { position: relative; overflow: hidden; width: 100%; max-width: 794px; margin: 0 auto; }
+.page {
+  --mm: 3.7795px; --inv: 1;
+  position: absolute; top: 0; right: 0; transform-origin: top right;
+  width: calc(210 * var(--mm)); height: calc(297 * var(--mm));
+  background: #fff; color: #000; box-shadow: var(--shadow);
+  padding: calc(3 * var(--mm)) calc(14.4 * var(--mm));
+}
+.grid { display: grid; grid-template-columns: repeat(2, calc(85.6 * var(--mm))); grid-template-rows: repeat(6, calc(46.8 * var(--mm))); row-gap: calc(2 * var(--mm)); column-gap: calc(10 * var(--mm)); }
+.cell { position: relative; width: calc(85.6 * var(--mm)); height: calc(46.8 * var(--mm)); }
+.page.guides .cell { outline: 1px dashed #b5b5b5; outline-offset: -1px; }
+.slot { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; cursor: pointer; border-radius: calc(3.18 * var(--mm)); overflow: hidden; background: #f4f6f7; color: #5a6a72; font-size: calc(13px * var(--inv)); line-height: 1.4; padding: 6px; }
+.cell:not(.has) .slot { outline: 1px dashed #9fb0b8; outline-offset: calc(-6px * var(--inv)); }
+.cell.drag .slot { background: #dcecf2; }
+.cell.has .slot { background: #fff; padding: 0; }
+.slot img { width: 100%; height: 100%; display: block; }
+.fit-fill .slot img { object-fit: fill; }
+.fit-contain .slot img { object-fit: contain; }
+.fit-cover .slot img { object-fit: cover; }
+.slot b { display: block; font-size: calc(15px * var(--inv)); color: #0b5c78; }
+.vh { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.rm { position: absolute; top: calc(6px * var(--inv)); left: calc(6px * var(--inv)); width: calc(30px * var(--inv)); height: calc(30px * var(--inv)); min-width: 24px; min-height: 24px; border-radius: 50%; border: 0; background: rgba(18,34,43,.8); color: #fff; font-size: calc(18px * var(--inv)); line-height: 1; display: none; place-items: center; padding: 0; z-index: 2; }
+.cell.has .rm { display: grid; }
+.bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: var(--surface); border-top: 1px solid var(--line);
+  padding: 10px max(16px, env(safe-area-inset-left, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-right, 0px));
+  box-shadow: var(--shadow);
+}
+.bar-in { max-width: 880px; margin: 0 auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.btn { border: 0; border-radius: 8px; padding: 10px 22px; font-weight: 600; background: var(--accent); color: var(--accent-ink); min-height: 42px; }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+.status { flex: 1; min-width: 160px; font-size: 13.5px; color: var(--muted); }
+.status.err { color: var(--warn); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <div>
+    <h1>طباعة البطاقة الوطنية</h1>
+    <p class="sub">ورقة A4 بعمودين وستة صفوف: الوجه في العمود الأيمن والخلف في الأيسر، بمقاس 85.6 × 46.8 ملم لكل بطاقة.</p>
+  </div>
+
+  <div class="tools">
+    <button type="button" class="tb" id="bulkBtn">اختيار عدة صور</button>
+    <input class="vh" type="file" id="bulk" accept="image/*" multiple tabindex="-1">
+    <button type="button" class="tb" id="repBtn">تكرار الصف الأول على كل الصفوف</button>
+    <button type="button" class="tb ghost" id="clearBtn">مسح الكل</button>
+    <span class="sp"></span>
+    <label class="opt" for="fit">ملء الخانة
+      <select id="fit">
+        <option value="fill">تمديد كامل</option>
+        <option value="contain">حفظ النسبة</option>
+        <option value="cover">قص الزوائد</option>
+      </select>
+    </label>
+    <label class="opt" for="guides"><input type="checkbox" id="guides" checked>خطوط التحديد (للمعاينة فقط)</label>
+  </div>
+  <p class="note">اضغط على أي خانة لاختيار صورتها، أو اسحب الصورة إليها. «اختيار عدة صور» يملأ الخانات الفارغة بالترتيب: وجه ثم خلف لكل صف. الصور تبقى في متصفحك ولا تُرفع إلى أي مكان.</p>
+
+  <div class="cols"><span>الوجه</span><span>الخلف</span></div>
+  <div class="pv-wrap" id="pvWrap">
+    <div class="page guides fit-fill" id="page"><div class="grid" id="grid"></div></div>
+  </div>
+</div>
+
+<div class="bar">
+  <div class="bar-in">
+    <button type="button" class="btn" id="pdfBtn">تصدير PDF</button>
+    <div class="status" id="status" role="status" aria-live="polite">لم تُضف أي صورة بعد.</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(function () {
+  var ROWS = 6, N = ROWS * 2;
+  var $ = function (id) { return document.getElementById(id); };
+  var slots = new Array(N);       // {blob, url, img}
+  var cells = [];
+  var dl = null;
+
+  function say(m, err) { var s = $('status'); s.textContent = m; s.className = 'status' + (err ? ' err' : ''); }
+  function ar(n) { return String(n).replace(/[0-9]/g, function (d) { return '٠١٢٣٤٥٦٧٨٩'.charAt(+d); }); }
+  function count() { return slots.filter(Boolean).length; }
+  function refreshStatus() {
+    var c = count();
+    say(c ? 'تمت إضافة ' + ar(c) + ' من ' + ar(N) + ' صور.' : 'لم تُضف أي صورة بعد.');
+  }
+
+  /* build the 12 slots */
+  var grid = $('grid');
+  for (var i = 0; i < N; i++) {
+    var r = Math.floor(i / 2), face = i % 2 === 0;
+    var label = (face ? 'وجه' : 'خلف') + ' البطاقة ' + ar(r + 1);
+    var cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.innerHTML =
+      '<label class="slot" for="f' + i + '"><span class="ph"><b>+</b>' + label + '</span></label>' +
+      '<input class="vh" type="file" id="f' + i + '" accept="image/*" data-i="' + i + '" aria-label="' + label + '">' +
+      '<button type="button" class="rm" data-rm="' + i + '" aria-label="إزالة صورة ' + label + '">×</button>';
+    grid.appendChild(cell);
+    cells.push(cell);
+  }
+
+  function renderSlot(i) {
+    var cell = cells[i], s = slots[i], lab = cell.querySelector('.slot');
+    var face = i % 2 === 0, r = Math.floor(i / 2);
+    cell.classList.toggle('has', !!s);
+    if (s) { lab.innerHTML = '<img alt="' + (face ? 'وجه' : 'خلف') + ' البطاقة ' + ar(r + 1) + '">'; lab.firstChild.src = s.url; }
+    else lab.innerHTML = '<span class="ph"><b>+</b>' + (face ? 'وجه' : 'خلف') + ' البطاقة ' + ar(r + 1) + '</span>';
+  }
+
+  function setBlob(i, blob) {
+    return new Promise(function (res) {
+      if (!blob || !/^image\//.test(blob.type)) { res(false); return; }
+      var url = URL.createObjectURL(blob), img = new Image();
+      img.onload = function () {
+        if (slots[i]) URL.revokeObjectURL(slots[i].url);
+        slots[i] = { blob: blob, url: url, img: img };
+        renderSlot(i); res(true);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); res(false); };
+      img.src = url;
+    });
+  }
+  function clearSlot(i) {
+    if (slots[i]) URL.revokeObjectURL(slots[i].url);
+    slots[i] = null; renderSlot(i);
+  }
+
+  grid.addEventListener('change', async function (e) {
+    var t = e.target; if (!t.dataset || t.dataset.i == null) return;
+    var ok = await setBlob(+t.dataset.i, t.files && t.files[0]);
+    t.value = '';
+    if (!ok) say('تعذر قراءة هذا الملف. اختر صورة بصيغة JPG أو PNG.', true); else refreshStatus();
+  });
+  grid.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-rm]'); if (!b) return;
+    clearSlot(+b.dataset.rm); refreshStatus();
+  });
+  cells.forEach(function (cell, i) {
+    cell.addEventListener('dragover', function (e) { e.preventDefault(); cell.classList.add('drag'); });
+    cell.addEventListener('dragleave', function () { cell.classList.remove('drag'); });
+    cell.addEventListener('drop', async function (e) {
+      e.preventDefault(); cell.classList.remove('drag');
+      var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (!f) return;
+      var ok = await setBlob(i, f);
+      if (!ok) say('تعذر قراءة هذا الملف. اختر صورة بصيغة JPG أو PNG.', true); else refreshStatus();
+    });
+  });
+
+  /* toolbar */
+  $('bulkBtn').addEventListener('click', function () { $('bulk').click(); });
+  $('bulk').addEventListener('change', async function (e) {
+    var files = Array.prototype.slice.call(e.target.files || []);
+    var skipped = 0, used = 0;
+    for (var k = 0; k < files.length; k++) {
+      var free = -1;
+      for (var j = 0; j < N; j++) { if (!slots[j]) { free = j; break; } }
+      if (free < 0) { skipped = files.length - k; break; }
+      if (await setBlob(free, files[k])) used++; else skipped++;
+    }
+    e.target.value = '';
+    if (skipped) say('أُضيفت ' + ar(used) + ' صور، وتعذر وضع ' + ar(skipped) + ' (لا خانات فارغة أو ملف غير صالح).', true);
+    else refreshStatus();
+  });
+  $('repBtn').addEventListener('click', async function () {
+    if (!slots[0] && !slots[1]) { say('أضف وجه البطاقة وخلفها في الصف الأول أولاً.', true); return; }
+    for (var r = 1; r < ROWS; r++) {
+      for (var c = 0; c < 2; c++) {
+        var src = slots[c];
+        if (src) await setBlob(r * 2 + c, src.blob); else clearSlot(r * 2 + c);
+      }
+    }
+    refreshStatus();
+  });
+  var clearT;
+  $('clearBtn').addEventListener('click', function () {
+    var b = $('clearBtn');
+    if (!b.classList.contains('confirm')) {
+      b.classList.add('confirm'); b.textContent = 'اضغط مرة أخرى للتأكيد';
+      clearT = setTimeout(function () { b.classList.remove('confirm'); b.textContent = 'مسح الكل'; }, 4000);
+      return;
+    }
+    clearTimeout(clearT); b.classList.remove('confirm'); b.textContent = 'مسح الكل';
+    for (var i = 0; i < N; i++) clearSlot(i);
+    refreshStatus();
+  });
+  $('fit').addEventListener('change', function () { $('page').className = 'page fit-' + $('fit').value + ($('guides').checked ? ' guides' : ''); });
+  $('guides').addEventListener('change', function () { $('page').classList.toggle('guides', $('guides').checked); });
+
+  /* scale the true-size page to the available width */
+  function fit() {
+    var wrap = $('pvWrap'), pg = $('page');
+    var k = Math.min(1, wrap.clientWidth / 793.7);
+    pg.style.transform = 'scale(' + k + ')';
+    pg.style.setProperty('--inv', String(Math.min(2.4, 1 / k)));
+    wrap.style.height = Math.ceil(1122.5 * k) + 'px';
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
+  /* export: draw at 300 dpi on a canvas, then place it on an A4 PDF page */
+  function roundPath(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.arcTo(x + w, y, x + w, y + r, r);
+    ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+    ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r);
+    ctx.lineTo(x, y + r); ctx.arcTo(x, y, x + r, y, r); ctx.closePath();
+  }
+  function drawSheet() {
+    var P = 300 / 25.4, mode = $('fit').value, guides = $('guides').checked;
+    var cv = document.createElement('canvas');
+    cv.width = Math.round(210 * P); cv.height = Math.round(297 * P);
+    var ctx = cv.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
+    var W = 85.6 * P, H = 46.8 * P, rad = 3.18 * P;
+    for (var i = 0; i < N; i++) {
+      var r = Math.floor(i / 2), c = i % 2;                 // c 0 = face (right column), c 1 = back (left column)
+      var x = (c === 0 ? 14.4 + 85.6 + 10 : 14.4) * P, y = (3 + 48.8 * r) * P;
+      var s = slots[i];
+      if (s) {
+        var im = s.img, iw = im.naturalWidth, ih = im.naturalHeight;
+        ctx.save(); roundPath(ctx, x, y, W, H, rad); ctx.clip();
+        if (mode === 'fill') ctx.drawImage(im, x, y, W, H);
+        else if (mode === 'contain') {
+          var k1 = Math.min(W / iw, H / ih), dw = iw * k1, dh = ih * k1;
+          ctx.drawImage(im, x + (W - dw) / 2, y + (H - dh) / 2, dw, dh);
+        } else {
+          var k2 = Math.max(W / iw, H / ih), sw = W / k2, sh = H / k2;
+          ctx.drawImage(im, (iw - sw) / 2, (ih - sh) / 2, sw, sh, x, y, W, H);
+        }
+        ctx.restore();
+      }
+    }
+    return cv;
+  }
+  async function saveFile(filename, blob) {
+    if (dl) {
+      try { await dl.save({ filename: filename, data: blob }); return; }
+      catch (e) { if (e && e.code === 'declined') throw e; }
+    }
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = filename; a.style.display = 'none';
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { a.remove(); URL.revokeObjectURL(url); }, 10000);
+  }
+  $('pdfBtn').addEventListener('click', async function () {
+    if (!count()) { say('أضف صورة واحدة على الأقل قبل التصدير.', true); return; }
+    if (!window.jspdf) { say('مكتبة PDF لم تُحمّل، تأكد من الاتصال ثم أعد المحاولة.', true); return; }
+    var b = $('pdfBtn'); b.disabled = true; say('جارٍ إنشاء ملف PDF…');
+    try {
+      var cv = drawSheet();
+      var pdf = new window.jspdf.jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+      pdf.addImage(cv.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 210, 297);
+      await saveFile('البطاقة_الوطنية_6_قطع.pdf', pdf.output('blob'));
+      say('تم حفظ ملف PDF. اطبعه بحجم 100% بدون تكبير أو تصغير.');
+    } catch (e) {
+      if (e && e.code === 'declined') say('أُلغي الحفظ.');
+      else say('تعذر إكمال التصدير' + (e && e.message ? ': ' + e.message : '.'), true);
+    } finally { b.disabled = false; }
+  });
+
+  var cl = window.claude;
+  if (cl && cl.use) cl.use('downloads').then(function (d) { dl = d; }, function () {});
+})();
+</script>
+
+</body></html>
